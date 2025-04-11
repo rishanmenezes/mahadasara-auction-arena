@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
 import { 
   Player, 
@@ -36,7 +37,8 @@ type AuctionAction =
   | { type: 'MARK_UNSOLD'; payload: { playerId: string } }
   | { type: 'NEXT_PLAYER' }
   | { type: 'UNDO_LAST_ACTION' }
-  | { type: 'RESET_AUCTION' };
+  | { type: 'RESET_AUCTION' }
+  | { type: 'UPDATE_HISTORY'; payload: { history: AuctionHistoryItem[] } };
 
 // Initial state
 const initialAuctionState: AuctionState = {
@@ -62,10 +64,10 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
       const newBidHistory: AuctionHistoryItem = {
         id: uuidv4(),
         playerId: state.currentPlayerId!,
-        playerName: '', // Will be filled in provider
+        playerName: '', // Will be filled in by the effect
         action: 'bid',
         teamId: action.payload.teamId,
-        teamName: '', // Will be filled in provider
+        teamName: '', // Will be filled in by the effect
         amount: action.payload.bidAmount,
         timestamp: new Date(),
       };
@@ -79,10 +81,10 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
       const sellHistory: AuctionHistoryItem = {
         id: uuidv4(),
         playerId: action.payload.playerId,
-        playerName: '', // Will be filled in provider
+        playerName: '', // Will be filled in by the effect
         action: 'sold',
         teamId: action.payload.teamId,
-        teamName: '', // Will be filled in provider
+        teamName: '', // Will be filled in by the effect
         amount: action.payload.amount,
         timestamp: new Date(),
       };
@@ -95,7 +97,7 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
       const unsoldHistory: AuctionHistoryItem = {
         id: uuidv4(),
         playerId: action.payload.playerId,
-        playerName: '', // Will be filled in provider
+        playerName: '', // Will be filled in by the effect
         action: 'unsold',
         timestamp: new Date(),
       };
@@ -122,6 +124,11 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
         ...state,
         history: newHistory,
       };
+    case 'UPDATE_HISTORY':
+      return {
+        ...state,
+        history: action.payload.history
+      };
     case 'RESET_AUCTION':
       return initialAuctionState;
     default:
@@ -140,6 +147,48 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
   const currentPlayer = auctionState.currentPlayerId
     ? players.find(player => player.id === auctionState.currentPlayerId) || null
     : null;
+
+  // Fill in missing data in auction history items
+  useEffect(() => {
+    if (auctionState.history.length === 0) return;
+    
+    // Get the most recent history item
+    const latestHistoryItem = auctionState.history[0];
+    
+    // Only process if the names are empty
+    if (!latestHistoryItem.playerName || 
+        (latestHistoryItem.teamId && !latestHistoryItem.teamName)) {
+      
+      // Find the player name
+      const player = players.find(p => p.id === latestHistoryItem.playerId);
+      const playerName = player ? player.name : 'Unknown Player';
+      
+      // Find the team name if applicable
+      let teamName = '';
+      if (latestHistoryItem.teamId) {
+        const team = teams.find(t => t.id === latestHistoryItem.teamId);
+        teamName = team ? team.name : 'Unknown Team';
+      }
+      
+      // Update the history item with the names
+      const updatedHistory = auctionState.history.map((item, index) => {
+        if (index === 0) {
+          return {
+            ...item,
+            playerName,
+            teamName: teamName || item.teamName
+          };
+        }
+        return item;
+      });
+      
+      // Update the state with the complete history
+      dispatch({
+        type: 'UPDATE_HISTORY',
+        payload: { history: updatedHistory }
+      });
+    }
+  }, [auctionState.history, players, teams]);
 
   // Start the auction for a player
   const startAuction = (playerId: string) => {
