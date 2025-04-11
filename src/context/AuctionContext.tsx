@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
 import { 
   Player, 
@@ -91,6 +90,9 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
       return {
         ...state,
         isAuctionInProgress: false,
+        currentPlayerId: null, // Reset current player after sale
+        currentBidAmount: 0,    // Reset bid amount
+        currentBidTeamId: null, // Reset team
         history: [sellHistory, ...state.history],
       };
     case 'MARK_UNSOLD':
@@ -104,6 +106,9 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
       return {
         ...state,
         isAuctionInProgress: false,
+        currentPlayerId: null, // Reset current player after marking unsold
+        currentBidAmount: 0,    // Reset bid amount
+        currentBidTeamId: null, // Reset team
         history: [unsoldHistory, ...state.history],
       };
     case 'NEXT_PLAYER':
@@ -124,8 +129,12 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
       const newHistory = [...state.history];
       const lastAction = newHistory.shift(); // Remove and get the first item (most recent)
       
+      if (!lastAction) {
+        return state;
+      }
+      
       // If undoing a bid action, we need to update current bid state
-      if (lastAction && lastAction.action === 'bid') {
+      if (lastAction.action === 'bid') {
         // Find the previous bid for this player, if any
         const previousBid = newHistory.find(item => 
           item.playerId === lastAction.playerId && item.action === 'bid'
@@ -148,9 +157,17 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
             history: newHistory,
           };
         }
+      } else if (lastAction.action === 'sold' || lastAction.action === 'unsold') {
+        // If we're undoing a sold or unsold action, restore the auction state
+        return {
+          ...state,
+          currentPlayerId: lastAction.playerId,
+          isAuctionInProgress: true,
+          history: newHistory,
+        };
       }
       
-      // For other actions (sold, unsold), just update the history
+      // For other actions, just update the history
       return {
         ...state,
         history: newHistory,
@@ -226,6 +243,16 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     const player = players.find(p => p.id === playerId);
     if (!player) return;
     
+    // Check if the player is already sold before starting auction
+    if (player.sold) {
+      toast({
+        title: "Cannot Auction Player",
+        description: `${player.name} has already been sold`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     dispatch({ type: 'START_AUCTION', payload: { playerId } });
     toast({
       title: "Auction Started",
@@ -245,6 +272,16 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     const newBidAmount = auctionState.currentBidAmount === 0
       ? currentPlayer.basePrice
       : auctionState.currentBidAmount + bidIncrement;
+    
+    // Prevent team from bidding against itself
+    if (auctionState.currentBidTeamId === teamId) {
+      toast({
+        title: "Already Highest Bidder",
+        description: `${team.name} is already the highest bidder.`,
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Validate the team can afford the bid
     if (team.remainingPurse < newBidAmount) {
@@ -335,7 +372,9 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       if (p.id === currentPlayer.id) {
         return {
           ...p,
-          sold: false
+          sold: false,
+          soldTo: undefined,
+          soldAmount: undefined
         };
       }
       return p;
@@ -422,35 +461,11 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       
       setTeams(updatedTeams);
       setPlayers(updatedPlayers);
-      
-      // Restore auction state for this player
-      if (currentPlayer && currentPlayer.id === playerId) {
-        // Find the last bid for this player before it was sold
-        const previousBids = auctionState.history.filter(item => 
-          item.playerId === playerId && item.action === 'bid'
-        );
-        
-        if (previousBids.length > 0) {
-          // Restore the auction to the state before the player was sold
-          dispatch({ 
-            type: 'START_AUCTION', 
-            payload: { playerId } 
-          });
-        }
-      }
     } else if (lastAction.action === 'unsold') {
-      // Undo marking a player as unsold - restore auction state
-      if (currentPlayer && currentPlayer.id === lastAction.playerId) {
-        dispatch({ 
-          type: 'START_AUCTION', 
-          payload: { playerId: lastAction.playerId } 
-        });
-      }
-    } else if (lastAction.action === 'bid') {
-      // Handled by the reducer
+      // Nothing to update for player state when undoing an unsold action
     }
     
-    // Update the auction state
+    // Update the auction state through the reducer
     dispatch({ type: 'UNDO_LAST_ACTION' });
     
     toast({
