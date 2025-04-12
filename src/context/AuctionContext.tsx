@@ -23,6 +23,9 @@ type AuctionContextType = {
   nextPlayer: () => void;
   undoLastAction: () => void;
   resetAuction: () => void;
+  addPlayer: (player: Player) => void;
+  updatePlayer: (player: Player) => void;
+  deletePlayer: (playerId: string) => void;
 };
 
 // Create context
@@ -120,28 +123,23 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
         isAuctionInProgress: false,
       };
     case 'UNDO_LAST_ACTION':
-      // If no history to undo, return current state
       if (state.history.length === 0) {
         return state;
       }
       
-      // Remove the last history item
       const newHistory = [...state.history];
-      const lastAction = newHistory.shift(); // Remove and get the first item (most recent)
+      const lastAction = newHistory.shift();
       
       if (!lastAction) {
         return state;
       }
       
-      // If undoing a bid action, we need to update current bid state
       if (lastAction.action === 'bid') {
-        // Find the previous bid for this player, if any
         const previousBid = newHistory.find(item => 
           item.playerId === lastAction.playerId && item.action === 'bid'
         );
         
         if (previousBid) {
-          // Restore to previous bid
           return {
             ...state,
             currentBidAmount: previousBid.amount || 0,
@@ -149,7 +147,6 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
             history: newHistory,
           };
         } else {
-          // No previous bid, go back to 0
           return {
             ...state,
             currentBidAmount: 0,
@@ -158,7 +155,6 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
           };
         }
       } else if (lastAction.action === 'sold' || lastAction.action === 'unsold') {
-        // If we're undoing a sold or unsold action, restore the auction state
         return {
           ...state,
           currentPlayerId: lastAction.playerId,
@@ -167,7 +163,6 @@ const auctionReducer = (state: AuctionState, action: AuctionAction): AuctionStat
         };
       }
       
-      // For other actions, just update the history
       return {
         ...state,
         history: newHistory,
@@ -191,34 +186,27 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
   const [auctionState, dispatch] = useReducer(auctionReducer, initialAuctionState);
   const { toast } = useToast();
 
-  // Find the current player based on the auction state
   const currentPlayer = auctionState.currentPlayerId
     ? players.find(player => player.id === auctionState.currentPlayerId) || null
     : null;
 
-  // Fill in missing data in auction history items
   useEffect(() => {
     if (auctionState.history.length === 0) return;
     
-    // Get the most recent history item
     const latestHistoryItem = auctionState.history[0];
     
-    // Only process if the names are empty
     if (!latestHistoryItem.playerName || 
         (latestHistoryItem.teamId && !latestHistoryItem.teamName)) {
       
-      // Find the player name
       const player = players.find(p => p.id === latestHistoryItem.playerId);
       const playerName = player ? player.name : 'Unknown Player';
       
-      // Find the team name if applicable
       let teamName = '';
       if (latestHistoryItem.teamId) {
         const team = teams.find(t => t.id === latestHistoryItem.teamId);
         teamName = team ? team.name : 'Unknown Team';
       }
       
-      // Update the history item with the names
       const updatedHistory = auctionState.history.map((item, index) => {
         if (index === 0) {
           return {
@@ -230,7 +218,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
         return item;
       });
       
-      // Update the state with the complete history
       dispatch({
         type: 'UPDATE_HISTORY',
         payload: { history: updatedHistory }
@@ -238,12 +225,10 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     }
   }, [auctionState.history, players, teams]);
 
-  // Start the auction for a player
   const startAuction = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
     if (!player) return;
     
-    // Check if the player is already sold before starting auction
     if (player.sold) {
       toast({
         title: "Cannot Auction Player",
@@ -260,20 +245,17 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Place a bid
   const placeBid = (teamId: string) => {
     if (!auctionState.isAuctionInProgress || !currentPlayer) return;
     
     const team = teams.find(t => t.id === teamId);
     if (!team) return;
     
-    // Calculate the new bid amount
     const bidIncrement = 500;
     const newBidAmount = auctionState.currentBidAmount === 0
       ? currentPlayer.basePrice
       : auctionState.currentBidAmount + bidIncrement;
     
-    // Prevent team from bidding against itself
     if (auctionState.currentBidTeamId === teamId) {
       toast({
         title: "Already Highest Bidder",
@@ -283,7 +265,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    // Validate the team can afford the bid
     if (team.remainingPurse < newBidAmount) {
       toast({
         title: "Insufficient Funds",
@@ -293,7 +274,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    // Update the state
     dispatch({
       type: 'PLACE_BID',
       payload: { teamId, bidAmount: newBidAmount }
@@ -305,7 +285,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Sell a player to the highest bidder
   const sellPlayer = () => {
     if (!auctionState.isAuctionInProgress || !currentPlayer || !auctionState.currentBidTeamId) {
       toast({
@@ -319,7 +298,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     const team = teams.find(t => t.id === auctionState.currentBidTeamId);
     if (!team) return;
     
-    // Update team's purse and player list
     const updatedTeams = teams.map(t => {
       if (t.id === team.id) {
         return {
@@ -331,7 +309,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       return t;
     });
     
-    // Update player status
     const updatedPlayers = players.map(p => {
       if (p.id === currentPlayer.id) {
         return {
@@ -344,7 +321,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       return p;
     });
     
-    // Update state
     setTeams(updatedTeams);
     setPlayers(updatedPlayers);
     
@@ -363,11 +339,9 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Mark a player as unsold
   const markAsUnsold = () => {
     if (!auctionState.isAuctionInProgress || !currentPlayer) return;
     
-    // Update player status
     const updatedPlayers = players.map(p => {
       if (p.id === currentPlayer.id) {
         return {
@@ -393,7 +367,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Move to next player
   const nextPlayer = () => {
     if (auctionState.isAuctionInProgress) {
       toast({
@@ -412,7 +385,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Undo the last action
   const undoLastAction = () => {
     if (auctionState.history.length === 0) {
       toast({
@@ -425,16 +397,13 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     
     const lastAction = auctionState.history[0];
     
-    // Handle different types of actions
     if (lastAction.action === 'sold') {
-      // Undo a player sale
       const teamId = lastAction.teamId;
       const playerId = lastAction.playerId;
       const amount = lastAction.amount || 0;
       
       if (!teamId) return;
       
-      // Restore team's purse and remove player
       const updatedTeams = teams.map(t => {
         if (t.id === teamId) {
           return {
@@ -446,7 +415,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
         return t;
       });
       
-      // Restore player status
       const updatedPlayers = players.map(p => {
         if (p.id === playerId) {
           return {
@@ -461,11 +429,8 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       
       setTeams(updatedTeams);
       setPlayers(updatedPlayers);
-    } else if (lastAction.action === 'unsold') {
-      // Nothing to update for player state when undoing an unsold action
     }
     
-    // Update the auction state through the reducer
     dispatch({ type: 'UNDO_LAST_ACTION' });
     
     toast({
@@ -474,7 +439,6 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Reset the auction
   const resetAuction = () => {
     setPlayers(mockPlayers);
     setTeams(mockTeams);
@@ -484,6 +448,67 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
       title: "Auction Reset",
       description: "The auction has been completely reset.",
     });
+  };
+
+  const addPlayer = (player: Player) => {
+    setPlayers(prevPlayers => [...prevPlayers, player]);
+  };
+
+  const updatePlayer = (updatedPlayer: Player) => {
+    if (auctionState.currentPlayerId === updatedPlayer.id && auctionState.isAuctionInProgress) {
+      toast({
+        title: "Cannot Update Player",
+        description: "Cannot update a player during an active auction",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setPlayers(prevPlayers => 
+      prevPlayers.map(player => 
+        player.id === updatedPlayer.id ? updatedPlayer : player
+      )
+    );
+
+    if (updatedPlayer.sold && updatedPlayer.soldTo) {
+      setTeams(prevTeams => 
+        prevTeams.map(team => {
+          if (team.id === updatedPlayer.soldTo) {
+            return {
+              ...team,
+              players: team.players.map(player => 
+                player.id === updatedPlayer.id ? updatedPlayer : player
+              )
+            };
+          }
+          return team;
+        })
+      );
+    }
+  };
+
+  const deletePlayer = (playerId: string) => {
+    if (auctionState.currentPlayerId === playerId && auctionState.isAuctionInProgress) {
+      toast({
+        title: "Cannot Delete Player",
+        description: "Cannot delete a player during an active auction",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const playerToDelete = players.find(p => p.id === playerId);
+    
+    if (playerToDelete?.sold) {
+      toast({
+        title: "Cannot Delete Player",
+        description: "Cannot delete a player who has been sold",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setPlayers(prevPlayers => prevPlayers.filter(player => player.id !== playerId));
   };
 
   const value = {
@@ -498,12 +523,14 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     nextPlayer,
     undoLastAction,
     resetAuction,
+    addPlayer,
+    updatePlayer,
+    deletePlayer,
   };
 
   return <AuctionContext.Provider value={value}>{children}</AuctionContext.Provider>;
 }
 
-// Create a hook to use the auction context
 export const useAuction = () => {
   const context = useContext(AuctionContext);
   if (context === undefined) {

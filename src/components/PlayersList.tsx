@@ -105,62 +105,70 @@ const PlayersList = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800">
-            {filteredPlayers.map((player) => (
-              <tr key={player.id} className="hover:bg-gray-800/50">
-                <td className="py-2 px-4">
-                  <div className="flex items-center">
-                    <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center mr-2">
-                      {player.imageUrl ? (
-                        <img src={player.imageUrl} alt={player.name} className="h-8 w-8 rounded-full object-cover" />
-                      ) : (
-                        <User className="h-4 w-4 text-gray-400" />
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-white">{player.name}</span>
-                  </div>
-                </td>
-                <td className="py-2 px-4">
-                  <Badge variant="outline" className="border-gray-700 text-gray-300">
-                    {player.position}
-                  </Badge>
-                </td>
-                <td className="py-2 px-4">
-                  <div className="flex items-center text-gray-300">
-                    <CircleDollarSign className="h-3 w-3 mr-1" />
-                    <span className="text-sm">₹{player.basePrice}</span>
-                  </div>
-                </td>
-                <td className="py-2 px-4">
-                  {player.sold ? (
-                    <div className="flex items-center">
-                      <CheckCircle2 className="h-4 w-4 text-auction-highlight mr-1" />
-                      <span className="text-sm text-auction-highlight">
-                        Sold to {getTeamName(player.soldTo || "")} (₹{player.soldAmount})
-                      </span>
-                    </div>
-                  ) : player.soldTo === undefined ? (
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 text-gray-400 mr-1" />
-                      <span className="text-sm text-gray-400">Upcoming</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <XCircle className="h-4 w-4 text-auction-danger mr-1" />
-                      <span className="text-sm text-auction-danger">Unsold</span>
-                    </div>
-                  )}
-                </td>
-                <td className="py-2 px-4">
-                  <Button
-                    onClick={() => startAuction(player.id)}
-                    disabled={player.sold}
-                    className="h-8 text-xs primary-button"
-                  >
-                    {player.sold ? 'Sold' : 'Auction'}
-                  </Button>
+            {filteredPlayers.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-4 px-4 text-center text-gray-400">
+                  No players found matching the filter
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredPlayers.map((player) => (
+                <tr key={player.id} className="hover:bg-gray-800/50">
+                  <td className="py-2 px-4">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center mr-2">
+                        {player.imageUrl ? (
+                          <img src={player.imageUrl} alt={player.name} className="h-8 w-8 rounded-full object-cover" />
+                        ) : (
+                          <User className="h-4 w-4 text-gray-400" />
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-white">{player.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-2 px-4">
+                    <Badge variant="outline" className="border-gray-700 text-gray-300">
+                      {player.position}
+                    </Badge>
+                  </td>
+                  <td className="py-2 px-4">
+                    <div className="flex items-center text-gray-300">
+                      <CircleDollarSign className="h-3 w-3 mr-1" />
+                      <span className="text-sm">₹{player.basePrice}</span>
+                    </div>
+                  </td>
+                  <td className="py-2 px-4">
+                    {player.sold ? (
+                      <div className="flex items-center">
+                        <CheckCircle2 className="h-4 w-4 text-auction-highlight mr-1" />
+                        <span className="text-sm text-auction-highlight">
+                          Sold to {getTeamName(player.soldTo || "")} (₹{player.soldAmount})
+                        </span>
+                      </div>
+                    ) : player.soldTo === undefined ? (
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 text-gray-400 mr-1" />
+                        <span className="text-sm text-gray-400">Upcoming</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <XCircle className="h-4 w-4 text-auction-danger mr-1" />
+                        <span className="text-sm text-auction-danger">Unsold</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-2 px-4">
+                    <Button
+                      onClick={() => startAuction(player.id)}
+                      disabled={player.sold}
+                      className="h-8 text-xs primary-button"
+                    >
+                      {player.sold ? 'Sold' : 'Auction'}
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

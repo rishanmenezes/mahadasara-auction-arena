@@ -6,6 +6,9 @@ import TeamDashboard from '@/components/TeamDashboard';
 import AuctionControls from '@/components/AuctionControls';
 import PlayersList from '@/components/PlayersList';
 import AuctionHistory from '@/components/AuctionHistory';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   return (
@@ -38,6 +41,15 @@ const Index = () => {
         
         {/* Players List */}
         <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Players</h2>
+            <Link to="/manage-players">
+              <Button className="primary-button">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Manage Players
+              </Button>
+            </Link>
+          </div>
           <PlayersList />
         </div>
       </main>
