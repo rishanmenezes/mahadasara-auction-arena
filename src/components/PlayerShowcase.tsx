@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, BarChart2 } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuction } from '@/context/AuctionContext';
 import { Badge } from '@/components/ui/badge';
@@ -65,42 +65,6 @@ const PlayerShowcase = () => {
                 </Badge>
               )}
             </div>
-            
-            {currentPlayer.stats && Object.keys(currentPlayer.stats).length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-400 mb-2 flex items-center">
-                  <BarChart2 className="h-4 w-4 mr-1" />
-                  STATS
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {currentPlayer.stats.battingAverage !== undefined && (
-                    <Badge className="bg-gray-700 text-gray-200 justify-start">
-                      Batting Avg: {currentPlayer.stats.battingAverage}
-                    </Badge>
-                  )}
-                  {currentPlayer.stats.bowlingAverage !== undefined && (
-                    <Badge className="bg-gray-700 text-gray-200 justify-start">
-                      Bowling Avg: {currentPlayer.stats.bowlingAverage}
-                    </Badge>
-                  )}
-                  {currentPlayer.stats.matchesPlayed !== undefined && (
-                    <Badge className="bg-gray-700 text-gray-200 justify-start">
-                      Matches: {currentPlayer.stats.matchesPlayed}
-                    </Badge>
-                  )}
-                  {currentPlayer.stats.runsScored !== undefined && (
-                    <Badge className="bg-gray-700 text-gray-200 justify-start">
-                      Runs: {currentPlayer.stats.runsScored}
-                    </Badge>
-                  )}
-                  {currentPlayer.stats.wicketsTaken !== undefined && (
-                    <Badge className="bg-gray-700 text-gray-200 justify-start">
-                      Wickets: {currentPlayer.stats.wicketsTaken}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </CardContent>
