@@ -21,19 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { v4 as uuidv4 } from 'uuid';
 
 const playerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   basePrice: z.coerce.number().min(500, "Base price must be at least 500"),
   position: z.enum(['Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper', 'Captain']),
-  skillsInput: z.string().optional(),
-  battingAverage: z.coerce.number().optional(),
-  bowlingAverage: z.coerce.number().optional(),
-  matchesPlayed: z.coerce.number().optional(),
-  runsScored: z.coerce.number().optional(),
-  wicketsTaken: z.coerce.number().optional(),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -52,17 +45,10 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
         name: player.name,
         basePrice: player.basePrice,
         position: player.position,
-        skillsInput: player.skills.join(', '),
-        battingAverage: player.stats.battingAverage,
-        bowlingAverage: player.stats.bowlingAverage,
-        matchesPlayed: player.stats.matchesPlayed,
-        runsScored: player.stats.runsScored,
-        wicketsTaken: player.stats.wicketsTaken,
       }
     : {
         basePrice: 1000,
         position: 'Batsman',
-        skillsInput: '',
       };
 
   const form = useForm<PlayerFormValues>({
@@ -71,24 +57,19 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
   });
 
   const handleSubmit = (values: PlayerFormValues) => {
-    // Convert the skills string to an array
-    const skills = values.skillsInput 
-      ? values.skillsInput.split(',').map(skill => skill.trim()).filter(Boolean)
-      : [];
-      
     const newPlayer: Player = {
       id: player?.id || uuidv4(),
       name: values.name,
       imageUrl: player?.imageUrl || '/placeholder.svg',
       basePrice: values.basePrice,
       position: values.position as PlayerPosition,
-      skills: skills,
+      skills: player?.skills || [],
       stats: {
-        battingAverage: values.battingAverage,
-        bowlingAverage: values.bowlingAverage,
-        matchesPlayed: values.matchesPlayed,
-        runsScored: values.runsScored,
-        wicketsTaken: values.wicketsTaken,
+        battingAverage: player?.stats.battingAverage,
+        bowlingAverage: player?.stats.bowlingAverage,
+        matchesPlayed: player?.stats.matchesPlayed,
+        runsScored: player?.stats.runsScored,
+        wicketsTaken: player?.stats.wicketsTaken,
       },
       sold: player?.sold || false,
       soldTo: player?.soldTo,
@@ -161,93 +142,6 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
               </FormItem>
             )}
           />
-          
-          <FormField
-            control={form.control}
-            name="skillsInput"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-white">Skills (comma-separated)</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Opening Batsman, Right Handed, Medium Pacer" {...field} 
-                    className="bg-auction-secondary border-gray-700 text-white resize-none h-20" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="matchesPlayed"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Matches Played</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} className="bg-auction-secondary border-gray-700 text-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="battingAverage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Batting Average</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.1" {...field} className="bg-auction-secondary border-gray-700 text-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="bowlingAverage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Bowling Average</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.1" {...field} className="bg-auction-secondary border-gray-700 text-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="runsScored"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Runs Scored</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} className="bg-auction-secondary border-gray-700 text-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="wicketsTaken"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Wickets Taken</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} className="bg-auction-secondary border-gray-700 text-white" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
           
           <div className="flex justify-end space-x-2 pt-4">
             <Button 
