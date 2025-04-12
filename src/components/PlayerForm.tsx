@@ -28,7 +28,7 @@ const playerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   basePrice: z.coerce.number().min(500, "Base price must be at least 500"),
   position: z.enum(['Batsman', 'Bowler', 'All-Rounder', 'Wicket-Keeper', 'Captain']),
-  skills: z.string().transform(val => val.split(',').map(skill => skill.trim()).filter(Boolean)),
+  skillsInput: z.string().optional(),
   battingAverage: z.coerce.number().optional(),
   bowlingAverage: z.coerce.number().optional(),
   matchesPlayed: z.coerce.number().optional(),
@@ -52,7 +52,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
         name: player.name,
         basePrice: player.basePrice,
         position: player.position,
-        skills: player.skills.join(', '),
+        skillsInput: player.skills.join(', '),
         battingAverage: player.stats.battingAverage,
         bowlingAverage: player.stats.bowlingAverage,
         matchesPlayed: player.stats.matchesPlayed,
@@ -62,6 +62,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
     : {
         basePrice: 1000,
         position: 'Batsman',
+        skillsInput: '',
       };
 
   const form = useForm<PlayerFormValues>({
@@ -70,13 +71,18 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
   });
 
   const handleSubmit = (values: PlayerFormValues) => {
+    // Convert the skills string to an array
+    const skills = values.skillsInput 
+      ? values.skillsInput.split(',').map(skill => skill.trim()).filter(Boolean)
+      : [];
+      
     const newPlayer: Player = {
       id: player?.id || uuidv4(),
       name: values.name,
       imageUrl: player?.imageUrl || '/placeholder.svg',
       basePrice: values.basePrice,
       position: values.position as PlayerPosition,
-      skills: values.skills,
+      skills: skills,
       stats: {
         battingAverage: values.battingAverage,
         bowlingAverage: values.bowlingAverage,
@@ -158,7 +164,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
           
           <FormField
             control={form.control}
-            name="skills"
+            name="skillsInput"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white">Skills (comma-separated)</FormLabel>
