@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuctionProvider } from "./context/AuctionContext";
 import Index from "./pages/Index";
 import ManagePlayers from "./pages/ManagePlayers";
+import ManageFranchises from "./pages/ManageFranchises";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/manage-players" element={<ManagePlayers />} />
+            <Route path="/manage-franchises" element={<ManageFranchises />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
