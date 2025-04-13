@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -75,26 +76,14 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       
       <div className="mb-6 flex justify-center">
         <div className="flex flex-col items-center">
-          <Avatar className="w-32 h-32 mb-2 border-2 border-gray-700">
-            {logoUrl ? (
-              <AvatarImage 
-                src={logoUrl} 
-                alt="Team logo" 
-                className="object-cover"
-              />
-            ) : (
-              <AvatarFallback className="bg-gray-800 text-white">
-                <Building2 className="w-12 h-12" />
-              </AvatarFallback>
-            )}
-          </Avatar>
           <ImageUploader 
             currentImage={logoUrl} 
             onImageUpload={handleImageUpload} 
             size="lg" 
             shape="circle"
-            className="border-2 border-white/30 mt-2"
+            className="border-2 border-gray-700 hover:border-white/40 transition-colors"
           />
+          <span className="text-sm text-gray-400 mt-2">Click to upload team logo</span>
         </div>
       </div>
       
