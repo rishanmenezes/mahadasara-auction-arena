@@ -16,10 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { v4 as uuidv4 } from 'uuid';
 import ImageUploader from '@/components/ImageUploader';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Building2 } from 'lucide-react';
 
 const teamSchema = z.object({
   name: z.string().min(1, "Team name is required"),
-  color: z.string().min(1, "Team color is required"),
   initialPurse: z.coerce.number().min(10000, "Initial purse must be at least 10,000"),
 });
 
@@ -38,12 +39,10 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const defaultValues: Partial<TeamFormValues> = team
     ? {
         name: team.name,
-        color: team.color,
         initialPurse: team.initialPurse,
       }
     : {
         initialPurse: 100000,
-        color: '#3B82F6',
       };
 
   const form = useForm<TeamFormValues>({
@@ -56,7 +55,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       id: team?.id || uuidv4(),
       name: values.name,
       logoUrl: logoUrl || '/placeholder.svg',
-      color: values.color,
+      color: '#333333', // Default neutral color for all teams
       initialPurse: values.initialPurse,
       remainingPurse: team ? team.remainingPurse : values.initialPurse,
       players: team?.players || [],
@@ -77,19 +76,27 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       
       <div className="mb-6 flex justify-center">
         <div className="flex flex-col items-center">
-          <div 
-            className="w-24 h-24 rounded-full mb-2"
-            style={{ backgroundColor: form.watch('color') || '#3B82F6' }}
-          >
-            <ImageUploader 
-              currentImage={logoUrl} 
-              onImageUpload={handleImageUpload} 
-              size="md" 
-              shape="circle"
-              className="border-2 border-white/30"
-            />
-          </div>
-          <span className="text-sm text-gray-400">Team Logo</span>
+          <Avatar className="w-32 h-32 mb-2 border-2 border-gray-700">
+            {logoUrl ? (
+              <AvatarImage 
+                src={logoUrl} 
+                alt="Team logo" 
+                className="object-cover"
+              />
+            ) : (
+              <AvatarFallback className="bg-gray-800 text-white">
+                <Building2 className="w-12 h-12" />
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <ImageUploader 
+            currentImage={logoUrl} 
+            onImageUpload={handleImageUpload} 
+            size="lg" 
+            shape="circle"
+            className="border-2 border-white/30 mt-2"
+          />
+          <span className="text-sm text-gray-400 mt-2">Click to upload team logo</span>
         </div>
       </div>
       
@@ -104,25 +111,6 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                 <FormControl>
                   <Input placeholder="Team name" {...field} className="bg-auction-secondary border-gray-700 text-white" />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-white">Team Color</FormLabel>
-                <div className="flex gap-3">
-                  <FormControl>
-                    <Input type="color" {...field} className="w-12 h-10 p-1 bg-auction-secondary border-gray-700" />
-                  </FormControl>
-                  <FormControl>
-                    <Input type="text" {...field} className="bg-auction-secondary border-gray-700 text-white" />
-                  </FormControl>
-                </div>
                 <FormMessage />
               </FormItem>
             )}

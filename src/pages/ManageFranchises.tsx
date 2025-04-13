@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import TeamForm from '@/components/TeamForm';
 import { Link } from 'react-router-dom';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const ManageFranchises = () => {
   const { teams, addTeam, updateTeam, deleteTeam } = useAuction();
@@ -141,20 +142,15 @@ const ManageFranchises = () => {
                       filteredTeams.map((team) => (
                         <tr key={team.id} className="hover:bg-gray-800/50">
                           <td className="py-3 px-4">
-                            <div 
-                              className="w-10 h-10 rounded-full flex items-center justify-center"
-                              style={{ backgroundColor: team.color }}
-                            >
+                            <Avatar className="w-10 h-10 border border-gray-700">
                               {team.logoUrl ? (
-                                <img
-                                  src={team.logoUrl}
-                                  alt={team.name}
-                                  className="w-8 h-8 rounded-full object-cover"
-                                />
+                                <AvatarImage src={team.logoUrl} alt={team.name} className="object-cover" />
                               ) : (
-                                <Building2 className="w-5 h-5 text-white" />
+                                <AvatarFallback className="bg-gray-800 text-white">
+                                  <Building2 className="w-5 h-5" />
+                                </AvatarFallback>
                               )}
-                            </div>
+                            </Avatar>
                           </td>
                           <td className="py-3 px-4 text-sm text-white">{team.name}</td>
                           <td className="py-3 px-4 text-sm text-gray-300">₹{team.initialPurse}</td>

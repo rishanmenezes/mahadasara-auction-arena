@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { useAuction } from '@/context/AuctionContext';
-import { CircleDollarSign } from 'lucide-react';
+import { CircleDollarSign, Building2 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const TeamDashboard = () => {
   const { teams, auctionState, placeBid } = useAuction();
@@ -19,22 +20,15 @@ const TeamDashboard = () => {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center">
-              <div
-                className="w-10 h-10 rounded-full mr-2 flex items-center justify-center"
-                style={{ backgroundColor: team.color }}
-              >
+              <Avatar className="w-12 h-12 mr-3 border-2 border-gray-700">
                 {team.logoUrl ? (
-                  <img
-                    src={team.logoUrl}
-                    alt={team.name}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
+                  <AvatarImage src={team.logoUrl} alt={team.name} className="object-cover" />
                 ) : (
-                  <span className="text-white font-bold text-lg">
-                    {team.name.charAt(0)}
-                  </span>
+                  <AvatarFallback className="bg-gray-800 text-white">
+                    <Building2 className="w-6 h-6" />
+                  </AvatarFallback>
                 )}
-              </div>
+              </Avatar>
               <h3 className="font-semibold text-white">{team.name}</h3>
             </div>
             <span

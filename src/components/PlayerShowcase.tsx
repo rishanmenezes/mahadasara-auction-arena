@@ -57,14 +57,14 @@ const PlayerShowcase = () => {
               {currentPlayer.name}
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 mb-6">
-              <Badge className="bg-auction-secondary hover:bg-auction-secondary text-black px-4 py-2 text-lg font-semibold flex items-center gap-2 shadow-md">
+              <Badge className="bg-auction-secondary hover:bg-amber-500 text-black px-4 py-2 text-lg font-semibold flex items-center gap-2 shadow-md">
                 <DollarSign className="h-5 w-5" />
                 Base Price: ₹{currentPlayer.basePrice}
               </Badge>
               
               {auctionState.currentBidAmount > 0 && (
                 <Badge 
-                  className={`bg-auction-highlight hover:bg-auction-highlight text-white px-4 py-2 text-lg font-semibold flex items-center gap-2 shadow-md ${
+                  className={`bg-auction-highlight hover:bg-emerald-600 text-white px-4 py-2 text-lg font-semibold flex items-center gap-2 shadow-md ${
                     auctionState.currentBidAmount > currentPlayer.basePrice ? 'animate-pulse-bid' : ''
                   }`}
                 >
