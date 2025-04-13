@@ -74,10 +74,10 @@ const PlayerShowcase = () => {
               )}
             </div>
             
-            {auctionState.currentBidder && (
+            {auctionState.currentBidTeamId && (
               <div className="mt-4 bg-auction-dark/50 p-3 rounded-lg border border-auction-accent/20 inline-block">
                 <span className="text-gray-400">Current Bidder: </span>
-                <span className="text-auction-secondary font-bold">{auctionState.currentBidder}</span>
+                <span className="text-auction-secondary font-bold">{auctionState.currentBidTeamId}</span>
               </div>
             )}
           </div>

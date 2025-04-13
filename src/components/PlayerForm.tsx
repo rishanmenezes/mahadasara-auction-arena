@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { v4 as uuidv4 } from 'uuid';
+import ImageUploader from '@/components/ImageUploader';
 
 const playerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -39,6 +40,7 @@ interface PlayerFormProps {
 
 const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) => {
   const isEditing = !!player;
+  const [imageUrl, setImageUrl] = useState<string | undefined>(player?.imageUrl);
   
   const defaultValues: Partial<PlayerFormValues> = player
     ? {
@@ -60,7 +62,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
     const newPlayer: Player = {
       id: player?.id || uuidv4(),
       name: values.name,
-      imageUrl: player?.imageUrl || '/placeholder.svg',
+      imageUrl: imageUrl || '/placeholder.svg',
       basePrice: values.basePrice,
       position: values.position as PlayerPosition,
       skills: player?.skills || [],
@@ -79,11 +81,25 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
     onSubmit(newPlayer);
   };
 
+  const handleImageUpload = (imageData: string) => {
+    setImageUrl(imageData);
+  };
+
   return (
     <div className="bg-auction-dark border border-gray-800 rounded-lg p-4">
       <h2 className="text-xl font-bold text-white mb-4">
         {isEditing ? 'Edit Player' : 'Add New Player'}
       </h2>
+      
+      <div className="mb-6 flex justify-center">
+        <ImageUploader 
+          currentImage={imageUrl} 
+          onImageUpload={handleImageUpload} 
+          size="lg" 
+          shape="circle"
+          className="border-4 border-auction-accent/30 shadow-[0_0_15px_rgba(79,70,229,0.15)]"
+        />
+      </div>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
