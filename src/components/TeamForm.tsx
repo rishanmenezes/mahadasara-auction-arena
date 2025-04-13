@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -96,7 +95,6 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
             shape="circle"
             className="border-2 border-white/30 mt-2"
           />
-          <span className="text-sm text-gray-400 mt-2">Click to upload team logo</span>
         </div>
       </div>
       
