@@ -26,6 +26,9 @@ type AuctionContextType = {
   addPlayer: (player: Player) => void;
   updatePlayer: (player: Player) => void;
   deletePlayer: (playerId: string) => void;
+  addTeam: (team: Team) => void;
+  updateTeam: (team: Team) => void;
+  deleteTeam: (teamId: string) => void;
 };
 
 // Create context
@@ -511,6 +514,52 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     setPlayers(prevPlayers => prevPlayers.filter(player => player.id !== playerId));
   };
 
+  const addTeam = (team: Team) => {
+    setTeams(prevTeams => [...prevTeams, team]);
+  };
+
+  const updateTeam = (updatedTeam: Team) => {
+    if (auctionState.isAuctionInProgress && 
+        auctionState.currentBidTeamId === updatedTeam.id) {
+      toast({
+        title: "Cannot Update Team",
+        description: "Cannot update a team during an active auction",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setTeams(prevTeams => 
+      prevTeams.map(team => 
+        team.id === updatedTeam.id ? updatedTeam : team
+      )
+    );
+  };
+
+  const deleteTeam = (teamId: string) => {
+    if (auctionState.isAuctionInProgress && 
+        auctionState.currentBidTeamId === teamId) {
+      toast({
+        title: "Cannot Delete Team",
+        description: "Cannot delete a team during an active auction",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const team = teams.find(t => t.id === teamId);
+    if (team && team.players.length > 0) {
+      toast({
+        title: "Cannot Delete Team",
+        description: "Cannot delete a team that has players",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
+  };
+
   const value = {
     players,
     teams,
@@ -526,6 +575,9 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
     addPlayer,
     updatePlayer,
     deletePlayer,
+    addTeam,
+    updateTeam,
+    deleteTeam,
   };
 
   return <AuctionContext.Provider value={value}>{children}</AuctionContext.Provider>;
