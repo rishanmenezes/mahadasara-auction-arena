@@ -57,11 +57,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       onClick={triggerFileInput}
     >
       {currentImage ? (
-        <img 
-          src={currentImage} 
-          alt="Uploaded image" 
-          className="w-full h-full object-cover"
-        />
+        <div className="w-full h-full">
+          <img 
+            src={currentImage} 
+            alt="Uploaded image" 
+            className="w-full h-full object-cover"
+          />
+        </div>
       ) : (
         <User className={`${size === 'sm' ? 'h-8 w-8' : size === 'md' ? 'h-16 w-16' : 'h-32 w-32'} text-gray-600`} />
       )}

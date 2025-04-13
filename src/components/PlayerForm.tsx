@@ -92,13 +92,16 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ player, onSubmit, onCancel }) =
       </h2>
       
       <div className="mb-6 flex justify-center">
-        <ImageUploader 
-          currentImage={imageUrl} 
-          onImageUpload={handleImageUpload} 
-          size="lg" 
-          shape="circle"
-          className="border-4 border-auction-accent/30 shadow-[0_0_15px_rgba(79,70,229,0.15)]"
-        />
+        <div className="flex flex-col items-center">
+          <ImageUploader 
+            currentImage={imageUrl} 
+            onImageUpload={handleImageUpload} 
+            size="lg" 
+            shape="circle"
+            className="border-4 border-auction-accent/30 shadow-[0_0_15px_rgba(79,70,229,0.15)]"
+          />
+          <span className="text-sm text-gray-400 mt-2">Click to upload player photo</span>
+        </div>
       </div>
       
       <Form {...form}>
